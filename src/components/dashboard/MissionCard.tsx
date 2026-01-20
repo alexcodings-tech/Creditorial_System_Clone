@@ -4,14 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Clock, CheckCircle2, AlertCircle, Play, Coins } from "lucide-react";
 
+type MissionStatus = "not_started" | "in_progress" | "ready_for_review" | "completed";
+
 interface MissionCardProps {
   id: string;
   projectName: string;
   clientName: string;
   projectType: string;
-  status: "not_started" | "in_progress" | "ready_for_review" | "completed";
+  status: string;
   expectedCredits: number;
-  dueDate: string;
+  dueDate?: string;
   progress?: number;
   onUpdateStatus?: (id: string, status: string) => void;
   style?: React.CSSProperties;
@@ -64,10 +66,12 @@ export function MissionCard({
   className,
   style,
 }: MissionCardProps) {
-  const config = statusConfig[status];
+  const normalizedStatus = (status in statusConfig ? status : "in_progress") as MissionStatus;
+  const config = statusConfig[normalizedStatus];
   const StatusIcon = config.icon;
 
   const getDaysRemaining = () => {
+    if (!dueDate) return 30;
     const due = new Date(dueDate);
     const now = new Date();
     const diff = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
