@@ -5,11 +5,11 @@ import { StatCard } from "@/components/ui/stat-card";
 import { ProgressRing } from "@/components/ui/progress-ring";
 import { BadgeAchievement } from "@/components/ui/badge-achievement";
 import { MissionCard } from "@/components/dashboard/MissionCard";
+import { CommonMissionsSection } from "@/components/missions/CommonMissionsSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Coins, Target, TrendingUp, Zap, Loader2, Star, Award, Crown } from "lucide-react";
-
 interface Assignment {
   id: string;
   project_id: string;
@@ -57,15 +57,23 @@ export default function EmployeeDashboard() {
       }));
       setAssignments(formattedData);
       
-      // Calculate total credits from approved requests
+      // Calculate total credits from approved credit_requests
       const { data: approvedCredits } = await supabase
         .from("credit_requests")
         .select("credits_requested")
         .eq("employee_id", user.id)
         .eq("status", "approved");
       
-      const total = (approvedCredits || []).reduce((sum, r) => sum + r.credits_requested, 0);
-      setTotalCredits(total);
+      // Also fetch approved mission_requests (cast to any for new table)
+      const { data: approvedMissions } = await (supabase as any)
+        .from("mission_requests")
+        .select("credits_requested")
+        .eq("employee_id", user.id)
+        .eq("status", "approved");
+      
+      const creditTotal = (approvedCredits || []).reduce((sum, r) => sum + r.credits_requested, 0);
+      const missionTotal = ((approvedMissions as any[]) || []).reduce((sum: number, r: any) => sum + r.credits_requested, 0);
+      setTotalCredits(creditTotal + missionTotal);
     }
     setLoading(false);
   };
@@ -210,9 +218,12 @@ export default function EmployeeDashboard() {
           </div>
         </div>
 
-        {/* My Missions */}
+        {/* Common Missions */}
+        <CommonMissionsSection />
+
+        {/* My Project Missions */}
         <div>
-          <h2 className="text-xl font-bold font-display text-foreground mb-6">My Missions</h2>
+          <h2 className="text-xl font-bold font-display text-foreground mb-6">My Project Missions</h2>
           {assignments.length === 0 ? (
             <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
               No projects assigned yet. Contact your admin or lead.
