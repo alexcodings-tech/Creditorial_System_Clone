@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Zap, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Zap, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -11,18 +13,46 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { signIn, user, profile, loading } = useAuth();
+  const { toast } = useToast();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user && profile) {
+      const roleRedirects: Record<string, string> = {
+        admin: "/admin",
+        lead: "/lead",
+        employee: "/dashboard",
+      };
+      navigate(roleRedirects[profile.role] || "/dashboard");
+    }
+  }, [user, profile, loading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate login - will be replaced with actual auth
-    setTimeout(() => {
+
+    const { error } = await signIn(email, password);
+
+    if (error) {
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid credentials",
+        variant: "destructive",
+      });
       setIsLoading(false);
-      // Default to employee dashboard for demo
-      navigate("/dashboard");
-    }, 1000);
+    }
+    // Navigation will happen via useEffect when profile loads
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -141,7 +171,7 @@ export default function Login() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <>
                   Sign in
@@ -155,36 +185,14 @@ export default function Login() {
             Contact your admin if you need access
           </div>
 
-          {/* Demo shortcuts */}
+          {/* Demo credentials hint */}
           <div className="pt-6 border-t border-border">
-            <p className="text-xs text-muted-foreground text-center mb-4">
-              Quick Demo Access
+            <p className="text-xs text-muted-foreground text-center mb-3">
+              Default Admin Credentials
             </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={() => navigate("/dashboard")}
-              >
-                Employee
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={() => navigate("/lead")}
-              >
-                Lead
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={() => navigate("/admin")}
-              >
-                Admin
-              </Button>
+            <div className="text-center text-sm text-muted-foreground space-y-1">
+              <p>Email: <span className="font-mono text-foreground">admin@gmail.com</span></p>
+              <p>Password: <span className="font-mono text-foreground">admin12</span></p>
             </div>
           </div>
         </div>

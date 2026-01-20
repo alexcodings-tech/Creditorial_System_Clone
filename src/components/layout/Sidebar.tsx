@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface SidebarProps {
   role: "admin" | "lead" | "employee";
@@ -47,7 +49,19 @@ const menuItems = {
 export function Sidebar({ role }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
+  const { toast } = useToast();
   const items = menuItems[role];
+
+  const handleLogout = async () => {
+    await signOut();
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out",
+    });
+    navigate("/login");
+  };
 
   return (
     <aside
@@ -106,15 +120,15 @@ export function Sidebar({ role }: SidebarProps) {
 
       {/* User section */}
       <div className="border-t border-border p-4">
-        <Link
-          to="/login"
+        <button
+          onClick={handleLogout}
           className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2.5 font-medium text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive"
+            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-medium text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive"
           )}
         >
           <LogOut className="h-5 w-5" />
           {!collapsed && <span>Logout</span>}
-        </Link>
+        </button>
       </div>
     </aside>
   );
