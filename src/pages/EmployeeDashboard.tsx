@@ -1,205 +1,241 @@
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ProfileCard } from "@/components/dashboard/ProfileCard";
-import { MissionCard } from "@/components/dashboard/MissionCard";
 import { StatCard } from "@/components/ui/stat-card";
 import { ProgressRing } from "@/components/ui/progress-ring";
 import { BadgeAchievement } from "@/components/ui/badge-achievement";
-import { Coins, Target, Calendar, Trophy, Zap, Award, Star, Crown } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { MissionCard } from "@/components/dashboard/MissionCard";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { Coins, Target, TrendingUp, Zap, Loader2, Star, Award, Crown } from "lucide-react";
 
-// Mock data - will be replaced with real data from backend
-const mockUser = {
-  name: "Vignesh S",
-  role: "Digital Marketing Executive",
-  rank: 4,
-  previousRank: 6,
-};
-
-const mockStats = {
-  monthlyCredits: 67,
-  lifetimeCredits: 1250,
-  monthlyTarget: 100,
-  completedProjects: 8,
-  pendingCredits: 15,
-};
-
-const mockProjects = [
-  {
-    id: "1",
-    projectName: "Q1 Meta Campaign",
-    clientName: "Raji's Kitchen",
-    projectType: "Meta Ads",
-    status: "in_progress" as const,
-    expectedCredits: 12,
-    dueDate: "2025-01-25",
-    progress: 65,
-  },
-  {
-    id: "2",
-    projectName: "Website SEO Optimization",
-    clientName: "Enfance",
-    projectType: "SEO",
-    status: "ready_for_review" as const,
-    expectedCredits: 8,
-    dueDate: "2025-01-22",
-  },
-  {
-    id: "3",
-    projectName: "Social Media Strategy",
-    clientName: "Zhar",
-    projectType: "Content",
-    status: "completed" as const,
-    expectedCredits: 10,
-    dueDate: "2025-01-20",
-  },
-  {
-    id: "4",
-    projectName: "Google Ads Setup",
-    clientName: "New Client",
-    projectType: "Meta Ads",
-    status: "not_started" as const,
-    expectedCredits: 15,
-    dueDate: "2025-02-01",
-  },
-];
-
-const mockAchievements = [
-  { title: "First Project", icon: Star, variant: "gold" as const },
-  { title: "10 Credits", icon: Coins, variant: "gold" as const },
-  { title: "Week Streak", icon: Zap, variant: "silver" as const },
-  { title: "Top 5", icon: Crown, variant: "bronze" as const },
-  { title: "Team Player", icon: Award, variant: "locked" as const },
-];
+interface Assignment {
+  id: string;
+  project_id: string;
+  status: string;
+  progress: number;
+  credits_earned: number;
+  project: {
+    id: string;
+    name: string;
+    client_name: string | null;
+    project_type: string;
+    expected_credits: number;
+    end_date: string | null;
+  };
+}
 
 export default function EmployeeDashboard() {
-  const [projects, setProjects] = useState(mockProjects);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalCredits, setTotalCredits] = useState(0);
+  const { user, profile } = useAuth();
+  const { toast } = useToast();
 
-  const handleUpdateStatus = (id: string, newStatus: string) => {
-    setProjects(prev =>
-      prev.map(p =>
-        p.id === id ? { ...p, status: newStatus as any } : p
-      )
+  const fetchAssignments = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("project_assignments")
+      .select(`
+        id,
+        project_id,
+        status,
+        progress,
+        credits_earned,
+        project:projects(id, name, client_name, project_type, expected_credits, end_date)
+      `)
+      .eq("employee_id", user.id);
+
+    if (error) {
+      console.error("Error fetching assignments:", error);
+    } else {
+      const formattedData = (data || []).map((item: any) => ({
+        ...item,
+        project: item.project,
+      }));
+      setAssignments(formattedData);
+      
+      // Calculate total credits from approved requests
+      const { data: approvedCredits } = await supabase
+        .from("credit_requests")
+        .select("credits_requested")
+        .eq("employee_id", user.id)
+        .eq("status", "approved");
+      
+      const total = (approvedCredits || []).reduce((sum, r) => sum + r.credits_requested, 0);
+      setTotalCredits(total);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [user]);
+
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    const { error } = await supabase
+      .from("project_assignments")
+      .update({ status: newStatus })
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update status",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Status Updated",
+        description: `Project status updated to ${newStatus}`,
+      });
+      fetchAssignments();
+    }
+  };
+
+  const handleRequestCredit = async (id: string) => {
+    const assignment = assignments.find((a) => a.id === id);
+    if (!assignment || !user) return;
+
+    const { error } = await supabase.from("credit_requests").insert({
+      assignment_id: id,
+      employee_id: user.id,
+      credits_requested: assignment.project.expected_credits,
+      notes: `Credit request for ${assignment.project.name}`,
+    });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit credit request",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Request Submitted",
+        description: "Your credit request has been submitted for approval",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout role="employee">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
     );
-    toast.success("Project status updated!");
-  };
+  }
 
-  const handleRequestCredit = (id: string) => {
-    toast.success("Credit request submitted for approval!");
-  };
+  const activeProjects = assignments.filter((a) => a.status === "in_progress").length;
+  const completedProjects = assignments.filter((a) => a.status === "completed").length;
+  const progressPercentage = Math.min(Math.round((totalCredits / 100) * 100), 100);
 
-  const progressPercentage = (mockStats.monthlyCredits / mockStats.monthlyTarget) * 100;
+  // Achievements based on progress
+  const achievements = [
+    { id: "1", title: "First Mission", description: "Complete your first project", icon: Star, variant: completedProjects > 0 ? "gold" as const : "locked" as const },
+    { id: "2", title: "Credit Hunter", description: "Earn 50 credits", icon: Coins, variant: totalCredits >= 50 ? "gold" as const : "locked" as const },
+    { id: "3", title: "Streak Master", description: "7-day login streak", icon: Zap, variant: "locked" as const },
+  ];
 
   return (
     <DashboardLayout role="employee">
       <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold font-display text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Track your performance and earn credits</p>
-        </div>
-
-        {/* Top section: Profile + Progress + Stats */}
+        {/* Header Row: Profile + Progress */}
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Profile Card */}
-          <ProfileCard
-            name={mockUser.name}
-            role={mockUser.role}
-            rank={mockUser.rank}
-            previousRank={mockUser.previousRank}
-          />
-
-          {/* Monthly Progress */}
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-6 shadow-lg animate-scale-in">
-            <h3 className="text-sm font-medium text-muted-foreground mb-4">Monthly Progress</h3>
-            <ProgressRing progress={progressPercentage} size={140} strokeWidth={10} />
-            <p className="text-sm text-muted-foreground mt-4">
-              <span className="font-bold text-foreground">{mockStats.monthlyCredits}</span> / {mockStats.monthlyTarget} credits
-            </p>
+          <div className="lg:col-span-2">
+            <ProfileCard
+              name={profile?.full_name || "Employee"}
+              role={profile?.role || "employee"}
+              avatar={profile?.avatar_url || undefined}
+              rank={1}
+              previousRank={1}
+            />
           </div>
 
-          {/* Credit Wallet */}
-          <div className="space-y-4">
-            <StatCard
-              title="This Month"
-              value={mockStats.monthlyCredits}
-              subtitle="credits earned"
-              icon={Coins}
-              variant="primary"
-              trend={{ value: 12, isPositive: true }}
-            />
-            <StatCard
-              title="Lifetime"
-              value={mockStats.lifetimeCredits.toLocaleString()}
-              subtitle="total credits"
-              icon={Trophy}
-              variant="accent"
-            />
+          {/* Monthly Progress Ring */}
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-lg flex flex-col items-center justify-center">
+            <h3 className="text-sm font-medium text-muted-foreground mb-4">Monthly Progress</h3>
+            <ProgressRing progress={progressPercentage} size={120} strokeWidth={10} showPercentage={false} />
+            <p className="text-sm text-muted-foreground mt-4">
+              <span className="font-bold text-foreground">{totalCredits}</span> / 100 credits
+            </p>
           </div>
         </div>
 
         {/* Quick Stats Row */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Completed Projects"
-            value={mockStats.completedProjects}
+            title="Total Credits"
+            value={totalCredits}
+            icon={Coins}
+            variant="primary"
+          />
+          <StatCard
+            title="Active Projects"
+            value={activeProjects}
             icon={Target}
           />
           <StatCard
-            title="Pending Credits"
-            value={mockStats.pendingCredits}
-            icon={Coins}
-            subtitle="awaiting approval"
+            title="Completed"
+            value={completedProjects}
+            icon={TrendingUp}
+            variant="success"
           />
           <StatCard
-            title="Current Rank"
-            value={`#${mockUser.rank}`}
-            icon={Trophy}
-          />
-          <StatCard
-            title="Days Active"
-            value="23"
-            icon={Calendar}
-            subtitle="this month"
+            title="This Week"
+            value={Math.min(totalCredits, 25)}
+            subtitle="of 25 weekly goal"
+            icon={Zap}
+            variant="accent"
           />
         </div>
 
         {/* Achievements */}
         <div className="rounded-2xl border border-border bg-card p-6 shadow-lg">
           <h2 className="text-xl font-bold font-display text-foreground mb-6">Achievements</h2>
-          <div className="flex flex-wrap gap-8 justify-center sm:justify-start">
-            {mockAchievements.map((achievement, index) => (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {achievements.map((achievement) => (
               <BadgeAchievement
-                key={index}
+                key={achievement.id}
                 title={achievement.title}
+                description={achievement.description}
                 icon={achievement.icon}
                 variant={achievement.variant}
-                size="md"
               />
             ))}
           </div>
         </div>
 
-        {/* My Missions / Allocated Projects */}
+        {/* My Missions */}
         <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold font-display text-foreground">My Missions</h2>
-            <span className="text-sm text-muted-foreground">
-              {projects.filter(p => p.status !== "completed").length} active
-            </span>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project, index) => (
-              <MissionCard
-                key={project.id}
-                {...project}
-                onUpdateStatus={handleUpdateStatus}
-                onRequestCredit={handleRequestCredit}
-                className={`animate-slide-up`}
-                style={{ animationDelay: `${index * 100}ms` } as React.CSSProperties}
-              />
-            ))}
-          </div>
+          <h2 className="text-xl font-bold font-display text-foreground mb-6">My Missions</h2>
+          {assignments.length === 0 ? (
+            <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
+              No projects assigned yet. Contact your admin or lead.
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {assignments.map((assignment) => (
+                <MissionCard
+                  key={assignment.id}
+                  id={assignment.id}
+                  projectName={assignment.project.name}
+                  clientName={assignment.project.client_name || "No Client"}
+                  projectType={assignment.project.project_type}
+                  status={assignment.status}
+                  expectedCredits={assignment.project.expected_credits}
+                  dueDate={assignment.project.end_date || undefined}
+                  progress={assignment.progress}
+                  onUpdateStatus={handleUpdateStatus}
+                  onRequestCredit={handleRequestCredit}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>
