@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      common_missions: {
+        Row: {
+          created_at: string
+          default_credit_value: number
+          id: string
+          is_active: boolean
+          mission_description: string | null
+          mission_name: string
+        }
+        Insert: {
+          created_at?: string
+          default_credit_value?: number
+          id?: string
+          is_active?: boolean
+          mission_description?: string | null
+          mission_name: string
+        }
+        Update: {
+          created_at?: string
+          default_credit_value?: number
+          id?: string
+          is_active?: boolean
+          mission_description?: string | null
+          mission_name?: string
+        }
+        Relationships: []
+      }
       credit_requests: {
         Row: {
           assignment_id: string
@@ -21,9 +48,11 @@ export type Database = {
           credits_requested: number
           employee_id: string
           id: string
+          mission_id: string | null
           notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          source_type: string | null
           status: string
         }
         Insert: {
@@ -32,9 +61,11 @@ export type Database = {
           credits_requested: number
           employee_id: string
           id?: string
+          mission_id?: string | null
           notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source_type?: string | null
           status?: string
         }
         Update: {
@@ -43,9 +74,11 @@ export type Database = {
           credits_requested?: number
           employee_id?: string
           id?: string
+          mission_id?: string | null
           notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source_type?: string | null
           status?: string
         }
         Relationships: [
@@ -54,6 +87,60 @@ export type Database = {
             columns: ["assignment_id"]
             isOneToOne: false
             referencedRelation: "project_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_requests_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "common_missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mission_requests: {
+        Row: {
+          created_at: string
+          credits_requested: number
+          description: string | null
+          employee_id: string
+          id: string
+          mission_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits_requested: number
+          description?: string | null
+          employee_id: string
+          id?: string
+          mission_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits_requested?: number
+          description?: string | null
+          employee_id?: string
+          id?: string
+          mission_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_requests_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "common_missions"
             referencedColumns: ["id"]
           },
         ]
