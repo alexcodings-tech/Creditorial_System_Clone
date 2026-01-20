@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Zap, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,8 +13,15 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, user, profile, loading } = useAuth();
-  const { toast } = useToast();
+  const {
+    signIn,
+    user,
+    profile,
+    loading
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -23,39 +29,33 @@ export default function Login() {
       const roleRedirects: Record<string, string> = {
         admin: "/admin",
         lead: "/lead",
-        employee: "/dashboard",
+        employee: "/dashboard"
       };
       navigate(roleRedirects[profile.role] || "/dashboard");
     }
   }, [user, profile, loading, navigate]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    const { error } = await signIn(email, password);
-
+    const {
+      error
+    } = await signIn(email, password);
     if (error) {
       toast({
         title: "Login Failed",
         description: error.message || "Invalid credentials",
-        variant: "destructive",
+        variant: "destructive"
       });
       setIsLoading(false);
     }
     // Navigation will happen via useEffect when profile loads
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+    return <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background flex">
+  return <div className="min-h-screen bg-background flex">
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 gradient-primary" />
@@ -128,56 +128,24 @@ export default function Login() {
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@zhar.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-12"
-                required
-              />
+              <Input id="email" type="email" placeholder="you@zhar.com" value={email} onChange={e => setEmail(e.target.value)} className="h-12" required />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 pr-12"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
+                <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className="h-12 pr-12" required />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full h-12 gradient-primary text-primary-foreground shadow-glow font-semibold text-base"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <>
+            <Button type="submit" className="w-full h-12 gradient-primary text-primary-foreground shadow-glow font-semibold text-base" disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
                   Sign in
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </>
-              )}
+                </>}
             </Button>
           </form>
 
@@ -186,17 +154,8 @@ export default function Login() {
           </div>
 
           {/* Demo credentials hint */}
-          <div className="pt-6 border-t border-border">
-            <p className="text-xs text-muted-foreground text-center mb-3">
-              Default Admin Credentials
-            </p>
-            <div className="text-center text-sm text-muted-foreground space-y-1">
-              <p>Email: <span className="font-mono text-foreground">admin@gmail.com</span></p>
-              <p>Password: <span className="font-mono text-foreground">admin12</span></p>
-            </div>
-          </div>
+          
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
