@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { LeaderboardRow } from "@/components/leaderboard/LeaderboardRow";
-import { RankBadge } from "@/components/ui/rank-badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy, Medal, Award, Crown, TrendingUp, Loader2 } from "lucide-react";
+import { TrendingUp, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -123,10 +122,9 @@ export default function Leaderboard() {
     setLoading(false);
   };
 
-  const topThree = leaderboardData.slice(0, 3);
-  const restOfLeaderboard = leaderboardData.slice(3);
-  
+  // Get only the current user's entry (privacy: users only see their own ranking)
   const currentUserEntry = leaderboardData.find(entry => entry.id === user?.id);
+  const totalParticipants = leaderboardData.length;
 
   if (loading) {
     return (
@@ -172,134 +170,42 @@ export default function Leaderboard() {
           </TabsList>
 
           <TabsContent value={timeframe} className="mt-8">
-            {leaderboardData.length === 0 ? (
+            {!currentUserEntry ? (
               <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
                 No approved credits found for this period. Complete missions and get approvals to appear on the leaderboard!
               </div>
             ) : (
-              <>
-                {/* Top 3 Podium */}
-                {topThree.length >= 3 && (
-                  <div className="mb-12">
-                    <div className="flex items-end justify-center gap-4 sm:gap-8">
-                      {/* 2nd Place */}
-                      <div className="flex flex-col items-center animate-slide-up" style={{ animationDelay: "100ms" }}>
-                        <div className="relative mb-4">
-                          <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full p-1 gradient-silver shadow-lg">
-                            <div className="flex h-full w-full items-center justify-center rounded-full bg-card text-xl sm:text-2xl font-bold font-display">
-                              {topThree[1]?.avatar ? (
-                                <img src={topThree[1].avatar} alt={topThree[1].name} className="h-full w-full rounded-full object-cover" />
-                              ) : (
-                                topThree[1]?.name.split(" ").map(n => n[0]).join("")
-                              )}
-                            </div>
-                          </div>
-                          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-                            <RankBadge rank={2} size="sm" />
-                          </div>
-                        </div>
-                        <div className="text-center">
-                          <p className="font-semibold text-foreground text-sm sm:text-base">{topThree[1]?.name}</p>
-                          <p className="text-xs text-muted-foreground truncate max-w-[100px] sm:max-w-none">{topThree[1]?.role}</p>
-                          <p className="text-lg font-bold font-display text-silver mt-1">{topThree[1]?.credits} pts</p>
-                        </div>
-                        <div className="h-24 w-20 sm:w-28 gradient-silver rounded-t-lg mt-4 flex items-center justify-center">
-                          <Medal className="h-8 w-8 text-white/80" />
-                        </div>
-                      </div>
-
-                      {/* 1st Place */}
-                      <div className="flex flex-col items-center animate-slide-up">
-                        <div className="relative mb-4">
-                          <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full p-1 gradient-gold shadow-[0_0_30px_hsl(45,93%,47%,0.5)] animate-pulse-slow">
-                            <div className="flex h-full w-full items-center justify-center rounded-full bg-card text-2xl sm:text-3xl font-bold font-display">
-                              {topThree[0]?.avatar ? (
-                                <img src={topThree[0].avatar} alt={topThree[0].name} className="h-full w-full rounded-full object-cover" />
-                              ) : (
-                                topThree[0]?.name.split(" ").map(n => n[0]).join("")
-                              )}
-                            </div>
-                          </div>
-                          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-                            <RankBadge rank={1} size="md" />
-                          </div>
-                          <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                            <Crown className="h-8 w-8 text-gold animate-bounce-subtle" />
-                          </div>
-                        </div>
-                        <div className="text-center">
-                          <p className="font-bold text-foreground text-base sm:text-lg">{topThree[0]?.name}</p>
-                          <p className="text-xs sm:text-sm text-muted-foreground">{topThree[0]?.role}</p>
-                          <p className="text-xl font-bold font-display text-gold mt-1">{topThree[0]?.credits} pts</p>
-                        </div>
-                        <div className="h-32 w-24 sm:w-32 gradient-gold rounded-t-lg mt-4 flex items-center justify-center">
-                          <Trophy className="h-10 w-10 text-white/80" />
-                        </div>
-                      </div>
-
-                      {/* 3rd Place */}
-                      <div className="flex flex-col items-center animate-slide-up" style={{ animationDelay: "200ms" }}>
-                        <div className="relative mb-4">
-                          <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full p-1 gradient-bronze shadow-lg">
-                            <div className="flex h-full w-full items-center justify-center rounded-full bg-card text-xl sm:text-2xl font-bold font-display">
-                              {topThree[2]?.avatar ? (
-                                <img src={topThree[2].avatar} alt={topThree[2].name} className="h-full w-full rounded-full object-cover" />
-                              ) : (
-                                topThree[2]?.name.split(" ").map(n => n[0]).join("")
-                              )}
-                            </div>
-                          </div>
-                          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-                            <RankBadge rank={3} size="sm" />
-                          </div>
-                        </div>
-                        <div className="text-center">
-                          <p className="font-semibold text-foreground text-sm sm:text-base">{topThree[2]?.name}</p>
-                          <p className="text-xs text-muted-foreground truncate max-w-[100px] sm:max-w-none">{topThree[2]?.role}</p>
-                          <p className="text-lg font-bold font-display text-bronze mt-1">{topThree[2]?.credits} pts</p>
-                        </div>
-                        <div className="h-20 w-20 sm:w-28 gradient-bronze rounded-t-lg mt-4 flex items-center justify-center">
-                          <Award className="h-8 w-8 text-white/80" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Rest of leaderboard */}
+              <div className="space-y-6">
+                {/* Your Ranking Card */}
                 <div className="space-y-3">
-                  {restOfLeaderboard.map((entry, index) => (
-                    <LeaderboardRow
-                      key={entry.id}
-                      rank={entry.rank}
-                      previousRank={entry.previousRank}
-                      name={entry.name}
-                      role={entry.role}
-                      credits={entry.credits}
-                      avatar={entry.avatar}
-                      isCurrentUser={entry.id === user?.id}
-                      className="animate-slide-up"
-                      style={{ animationDelay: `${(index + 3) * 100}ms` } as React.CSSProperties}
-                    />
-                  ))}
+                  <h2 className="text-lg font-semibold text-foreground">Your Ranking</h2>
+                  <LeaderboardRow
+                    rank={currentUserEntry.rank}
+                    previousRank={currentUserEntry.previousRank}
+                    name={currentUserEntry.name}
+                    role={currentUserEntry.role}
+                    credits={currentUserEntry.credits}
+                    avatar={currentUserEntry.avatar}
+                    isCurrentUser={true}
+                    className="animate-slide-up"
+                  />
                 </div>
 
-                {/* Current user's position highlight */}
-                {currentUserEntry && (
-                  <div className="mt-8 p-4 rounded-xl border-2 border-primary/30 bg-primary/5">
-                    <div className="flex items-center gap-3">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="font-medium text-foreground">Your Current Position</p>
-                        <p className="text-sm text-muted-foreground">
-                          You're at <span className="font-bold text-primary">rank #{currentUserEntry.rank}</span> with{" "}
-                          <span className="font-bold">{currentUserEntry.credits} credits</span>. Keep going!
-                        </p>
-                      </div>
+                {/* Position Summary */}
+                <div className="p-4 rounded-xl border-2 border-primary/30 bg-primary/5">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="font-medium text-foreground">Your Current Position</p>
+                      <p className="text-sm text-muted-foreground">
+                        You're at <span className="font-bold text-primary">rank #{currentUserEntry.rank}</span> out of{" "}
+                        <span className="font-bold">{totalParticipants} participants</span> with{" "}
+                        <span className="font-bold">{currentUserEntry.credits} credits</span>. Keep going!
+                      </p>
                     </div>
                   </div>
-                )}
-              </>
+                </div>
+              </div>
             )}
           </TabsContent>
         </Tabs>
