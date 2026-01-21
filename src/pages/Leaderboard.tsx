@@ -8,6 +8,8 @@ import { Trophy, Medal, Award, Crown, TrendingUp, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+type AppRole = "admin" | "lead" | "employee";
+
 interface LeaderboardEntry {
   id: string;
   rank: number;
@@ -29,7 +31,10 @@ export default function Leaderboard() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  
+  // Determine the user's role for proper sidebar display
+  const userRole: AppRole = (profile?.role as AppRole) || "employee";
 
   useEffect(() => {
     fetchLeaderboardData();
@@ -125,7 +130,7 @@ export default function Leaderboard() {
 
   if (loading) {
     return (
-      <DashboardLayout role="employee">
+      <DashboardLayout role={userRole}>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -134,7 +139,7 @@ export default function Leaderboard() {
   }
 
   return (
-    <DashboardLayout role="employee">
+    <DashboardLayout role={userRole}>
       <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
