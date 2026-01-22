@@ -35,7 +35,6 @@ const menuItems = {
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
     { icon: FolderKanban, label: "Projects", path: "/lead/projects" },
     { icon: Users, label: "Team", path: "/lead/team" },
-    { icon: Users, label: "Team Performance", path: "/lead" },
     { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
     { icon: Settings, label: "Settings", path: "/lead/settings" },
   ],
