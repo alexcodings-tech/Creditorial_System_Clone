@@ -28,7 +28,7 @@ export default function Login() {
     if (!loading && user && profile) {
       const roleRedirects: Record<string, string> = {
         admin: "/admin",
-        lead: "/lead",
+        lead: "/dashboard",
         employee: "/dashboard"
       };
       navigate(roleRedirects[profile.role] || "/dashboard");

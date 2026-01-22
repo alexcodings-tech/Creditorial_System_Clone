@@ -5,6 +5,11 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Users, Loader2 } from "lucide-react";
 
+interface Assignee {
+  id: string;
+  full_name: string;
+}
+
 interface Project {
   id: string;
   name: string;
@@ -13,7 +18,7 @@ interface Project {
   status: string;
   end_date: string | null;
   expected_credits: number;
-  assignee_count: number;
+  assignees: Assignee[];
 }
 
 export default function LeadProjects() {
@@ -33,22 +38,37 @@ export default function LeadProjects() {
         return;
       }
 
-      // Get assignee count for each project
-      const projectsWithCounts = await Promise.all(
+      // Get assignee names for each project
+      const projectsWithAssignees = await Promise.all(
         (projectsData || []).map(async (project) => {
-          const { count } = await supabase
+          const { data: assignments } = await supabase
             .from("project_assignments")
-            .select("*", { count: "exact", head: true })
+            .select("employee_id")
             .eq("project_id", project.id);
+
+          const employeeIds = assignments?.map(a => a.employee_id) || [];
+          
+          let assignees: Assignee[] = [];
+          if (employeeIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from("profiles")
+              .select("id, full_name")
+              .in("id", employeeIds);
+            
+            assignees = (profiles || []).map(p => ({
+              id: p.id,
+              full_name: p.full_name
+            }));
+          }
 
           return {
             ...project,
-            assignee_count: count || 0,
+            assignees,
           };
         })
       );
 
-      setProjects(projectsWithCounts);
+      setProjects(projectsWithAssignees);
       setLoading(false);
     };
 
@@ -120,7 +140,14 @@ export default function LeadProjects() {
                       <Users className="h-4 w-4" />
                       Assignees
                     </span>
-                    <span className="font-medium">{project.assignee_count}</span>
+                    <span className="font-medium text-right max-w-[150px] truncate" title={project.assignees.map(a => a.full_name).join(", ")}>
+                      {project.assignees.length === 0 
+                        ? "None" 
+                        : project.assignees.length <= 2 
+                          ? project.assignees.map(a => a.full_name).join(", ")
+                          : `${project.assignees.slice(0, 2).map(a => a.full_name).join(", ")} +${project.assignees.length - 2} more`
+                      }
+                    </span>
                   </div>
 
                   {project.end_date && (
