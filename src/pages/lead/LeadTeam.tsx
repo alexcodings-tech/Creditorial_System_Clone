@@ -32,15 +32,23 @@ export default function LeadTeam() {
         return;
       }
 
-      // Enrich with project and credit data
+      // Enrich with project and approved credit data
       const enrichedMembers = await Promise.all(
         (profiles || []).map(async (profile) => {
+          // Get project count
           const { data: assignments } = await supabase
             .from("project_assignments")
-            .select("credits_earned")
+            .select("id")
             .eq("employee_id", profile.id);
 
-          const totalCredits = assignments?.reduce((sum, a) => sum + (a.credits_earned || 0), 0) || 0;
+          // Get approved credits from credit_requests
+          const { data: approvedCredits } = await supabase
+            .from("credit_requests")
+            .select("credits_requested")
+            .eq("employee_id", profile.id)
+            .eq("status", "approved");
+
+          const totalCredits = approvedCredits?.reduce((sum, cr) => sum + (cr.credits_requested || 0), 0) || 0;
 
           return {
             ...profile,

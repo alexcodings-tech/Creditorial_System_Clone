@@ -39,7 +39,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     // Redirect to appropriate dashboard based on role
     const roleRedirects: Record<AppRole, string> = {
       admin: "/admin",
-      lead: "/lead",
+      lead: "/dashboard",
       employee: "/dashboard",
     };
     return <Navigate to={roleRedirects[profile.role]} replace />;
