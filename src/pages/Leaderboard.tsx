@@ -22,7 +22,6 @@ interface LeaderboardEntry {
 
 const roleCategories = [
   { value: "all", label: "All Roles" },
-  { value: "admin", label: "Admin" },
   { value: "lead", label: "Lead" },
   { value: "employee", label: "Employee" },
 ];
@@ -60,11 +59,11 @@ export default function Leaderboard() {
         break;
     }
 
-    // Fetch all profiles (employees, leads, and admins)
+    // Fetch all profiles (employees and leads only - exclude admins from leaderboard)
     let profilesQuery = supabase
       .from("profiles")
       .select("id, full_name, role, avatar_url")
-      .in("role", ["employee", "lead", "admin"] as const);
+      .in("role", ["employee", "lead"] as const);
 
     if (roleFilter !== "all") {
       profilesQuery = profilesQuery.eq("role", roleFilter as AppRole);
@@ -102,7 +101,7 @@ export default function Leaderboard() {
         (creditRequests || []).reduce((sum: number, r: any) => sum + r.credits_requested, 0) +
         ((missionRequests as any[]) || []).reduce((sum: number, r: any) => sum + r.credits_requested, 0);
 
-      const roleLabel = profile.role === "admin" ? "Admin" : profile.role === "lead" ? "Team Lead" : "Employee";
+      const roleLabel = profile.role === "lead" ? "Team Lead" : "Employee";
 
       leaderboardEntries.push({
         id: profile.id,
