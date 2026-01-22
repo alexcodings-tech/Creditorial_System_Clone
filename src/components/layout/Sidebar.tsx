@@ -32,10 +32,10 @@ const menuItems = {
     { icon: Settings, label: "Settings", path: "/admin/settings" },
   ],
   lead: [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-    { icon: FolderKanban, label: "My Projects", path: "/lead/projects" },
-    { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
+    { icon: LayoutDashboard, label: "Dashboard", path: "/lead" },
+    { icon: FolderKanban, label: "Projects", path: "/lead/projects" },
     { icon: Users, label: "Team", path: "/lead/team" },
+    { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
     { icon: Settings, label: "Settings", path: "/lead/settings" },
   ],
   employee: [
