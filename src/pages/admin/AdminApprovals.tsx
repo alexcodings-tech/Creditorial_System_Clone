@@ -134,6 +134,9 @@ export default function AdminApprovals() {
   }, []);
 
   const handleCreditApproval = async (requestId: string, approved: boolean) => {
+    // Find the request to get the assignment_id
+    const request = creditRequests.find((r) => r.id === requestId);
+    
     const { error } = await supabase
       .from("credit_requests")
       .update({
@@ -149,13 +152,30 @@ export default function AdminApprovals() {
         description: `Failed to ${approved ? "approve" : "reject"} request`,
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: approved ? "Approved" : "Rejected",
-        description: `Credit request has been ${approved ? "approved" : "rejected"}`,
-      });
-      fetchRequests();
+      return;
     }
+
+    // If approved, automatically mark the project assignment as completed
+    // This only applies to Projects, not Common Missions
+    if (approved && request?.assignment_id) {
+      const { error: assignmentError } = await supabase
+        .from("project_assignments")
+        .update({
+          status: "completed",
+        })
+        .eq("id", request.assignment_id);
+
+      if (assignmentError) {
+        console.error("Error updating project assignment status:", assignmentError);
+        // Don't show error toast - the credit approval was successful
+      }
+    }
+
+    toast({
+      title: approved ? "Approved" : "Rejected",
+      description: `Credit request has been ${approved ? "approved" : "rejected"}${approved ? " and project marked as completed" : ""}`,
+    });
+    fetchRequests();
   };
 
   const handleMissionApproval = async (requestId: string, approved: boolean) => {
