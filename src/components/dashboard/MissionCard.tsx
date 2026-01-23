@@ -18,6 +18,7 @@ interface MissionCardProps {
   onUpdateStatus?: (id: string, status: string) => void;
   style?: React.CSSProperties;
   onRequestCredit?: (id: string) => void;
+  hasApprovedCredit?: boolean;
   className?: string;
 }
 
@@ -63,6 +64,7 @@ export function MissionCard({
   progress = 0,
   onUpdateStatus,
   onRequestCredit,
+  hasApprovedCredit = false,
   className,
   style,
 }: MissionCardProps) {
@@ -140,7 +142,7 @@ export function MissionCard({
 
       {/* Actions */}
       <div className="flex gap-2">
-        {status !== "completed" && (
+        {status !== "completed" && !hasApprovedCredit && (
           <Button
             size="sm"
             variant="outline"
@@ -157,7 +159,7 @@ export function MissionCard({
             Update Status
           </Button>
         )}
-        {status === "completed" && (
+        {status === "completed" && !hasApprovedCredit && (
           <Button
             size="sm"
             className="flex-1 gradient-primary text-primary-foreground shadow-glow"
@@ -166,6 +168,12 @@ export function MissionCard({
             <Coins className="h-4 w-4 mr-2" />
             Request Credit
           </Button>
+        )}
+        {hasApprovedCredit && (
+          <div className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md bg-success/10 text-success text-sm font-medium">
+            <CheckCircle2 className="h-4 w-4" />
+            Credits Awarded
+          </div>
         )}
       </div>
     </div>

@@ -12,6 +12,7 @@ interface Assignment {
   status: string;
   progress: number;
   credits_earned: number;
+  has_approved_credit: boolean;
   project: {
     id: string;
     name: string;
@@ -45,13 +46,27 @@ export default function EmployeeProjects() {
 
     if (error) {
       console.error("Error fetching assignments:", error);
-    } else {
-      const formattedData = (data || []).map((item: any) => ({
-        ...item,
-        project: item.project,
-      }));
-      setAssignments(formattedData);
+      setLoading(false);
+      return;
     }
+
+    // Fetch approved credit requests to check which assignments already have credits
+    const { data: approvedCredits } = await supabase
+      .from("credit_requests")
+      .select("assignment_id")
+      .eq("employee_id", user.id)
+      .eq("status", "approved");
+
+    const approvedAssignmentIds = new Set(
+      (approvedCredits || []).map((cr) => cr.assignment_id)
+    );
+
+    const formattedData = (data || []).map((item: any) => ({
+      ...item,
+      project: item.project,
+      has_approved_credit: approvedAssignmentIds.has(item.id),
+    }));
+    setAssignments(formattedData);
     setLoading(false);
   };
 
@@ -84,6 +99,16 @@ export default function EmployeeProjects() {
     const assignment = assignments.find((a) => a.id === id);
     if (!assignment || !user) return;
 
+    // Block credit requests for completed projects that already have approved credits
+    if (assignment.has_approved_credit) {
+      toast({
+        title: "Already Credited",
+        description: "This project has already received approved credits",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { error } = await supabase.from("credit_requests").insert({
       assignment_id: id,
       employee_id: user.id,
@@ -102,6 +127,7 @@ export default function EmployeeProjects() {
         title: "Request Submitted",
         description: "Your credit request has been submitted for approval",
       });
+      fetchAssignments(); // Refresh to update UI
     }
   };
 
@@ -144,6 +170,7 @@ export default function EmployeeProjects() {
                 progress={assignment.progress}
                 onUpdateStatus={handleUpdateStatus}
                 onRequestCredit={handleRequestCredit}
+                hasApprovedCredit={assignment.has_approved_credit}
               />
             ))}
           </div>
