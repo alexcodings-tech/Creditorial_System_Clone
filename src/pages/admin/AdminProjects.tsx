@@ -34,16 +34,23 @@ import { Plus, Search, Calendar, Users, Loader2 } from "lucide-react";
 
 type Sector = "Web Development" | "Digital Marketing" | "Content Creation";
 
+interface ActivityCredit {
+  activity: string;
+  credits: number;
+  sector: string;
+}
+
 interface Project {
   id: string;
   name: string;
   description: string | null;
   client_name: string | null;
   project_type: string;
+  activity: string | null;
   status: string;
   start_date: string | null;
   end_date: string | null;
-  expected_credits: number;
+  expected_credits: number | null;
   created_at: string;
 }
 
@@ -58,6 +65,7 @@ interface Profile {
 export default function AdminProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [employees, setEmployees] = useState<Profile[]>([]);
+  const [activities, setActivities] = useState<ActivityCredit[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
@@ -74,7 +82,7 @@ export default function AdminProjects() {
   const [newProjectType, setNewProjectType] = useState<Sector>("Web Development");
   const [newStartDate, setNewStartDate] = useState("");
   const [newEndDate, setNewEndDate] = useState("");
-  const [newExpectedCredits, setNewExpectedCredits] = useState("10");
+  const [newActivity, setNewActivity] = useState("");
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
 
   const fetchProjects = async () => {
@@ -109,24 +117,49 @@ export default function AdminProjects() {
     }
   };
 
+  const fetchActivities = async () => {
+    const { data, error } = await supabase
+      .from("activity_credits")
+      .select("*")
+      .order("activity");
+
+    if (error) {
+      console.error("Error fetching activities:", error);
+    } else {
+      setActivities(data as ActivityCredit[]);
+    }
+  };
+
   useEffect(() => {
     fetchProjects();
     fetchEmployees();
+    fetchActivities();
   }, []);
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!newActivity) {
+      toast({
+        title: "Activity Required",
+        description: "Please select an activity type for this project",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsCreating(true);
 
     try {
+      // Credits are auto-calculated by the database trigger based on activity
       const { error } = await supabase.from("projects").insert({
         name: newName,
         description: newDescription || null,
         client_name: newClientName || null,
         project_type: newProjectType,
+        activity: newActivity,
         start_date: newStartDate || null,
         end_date: newEndDate || null,
-        expected_credits: parseInt(newExpectedCredits) || 10,
         created_by: user?.id,
       });
 
@@ -142,9 +175,9 @@ export default function AdminProjects() {
       setNewDescription("");
       setNewClientName("");
       setNewProjectType("Web Development");
+      setNewActivity("");
       setNewStartDate("");
       setNewEndDate("");
-      setNewExpectedCredits("10");
       setIsDialogOpen(false);
       fetchProjects();
     } catch (error: any) {
@@ -157,6 +190,16 @@ export default function AdminProjects() {
       setIsCreating(false);
     }
   };
+
+  // Filter activities based on selected project type (sector)
+  const filteredActivities = activities.filter(
+    (act) => act.sector === newProjectType
+  );
+
+  // Get credits for selected activity (for display purposes)
+  const selectedActivityCredits = activities.find(
+    (act) => act.activity === newActivity
+  )?.credits;
 
   const handleAssignEmployee = async () => {
     if (!selectedProject || !selectedEmployeeId) return;
@@ -281,7 +324,13 @@ export default function AdminProjects() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="type">Project Type</Label>
-                    <Select value={newProjectType} onValueChange={(v) => setNewProjectType(v as Sector)}>
+                    <Select 
+                      value={newProjectType} 
+                      onValueChange={(v) => {
+                        setNewProjectType(v as Sector);
+                        setNewActivity(""); // Reset activity when sector changes
+                      }}
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -314,14 +363,27 @@ export default function AdminProjects() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="credits">Expected Credits</Label>
-                  <Input
-                    id="credits"
-                    type="number"
-                    value={newExpectedCredits}
-                    onChange={(e) => setNewExpectedCredits(e.target.value)}
-                    min="1"
-                  />
+                  <Label htmlFor="activity">Activity Type</Label>
+                  <Select 
+                    value={newActivity} 
+                    onValueChange={setNewActivity}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select an activity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredActivities.map((act) => (
+                        <SelectItem key={act.activity} value={act.activity}>
+                          {act.activity} ({act.credits} credits)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedActivityCredits !== undefined && (
+                    <p className="text-sm text-muted-foreground">
+                      Auto-calculated credits: <span className="font-semibold text-foreground">{selectedActivityCredits}</span>
+                    </p>
+                  )}
                 </div>
                 <Button
                   type="submit"
