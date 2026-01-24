@@ -16,6 +16,7 @@ interface Assignment {
   status: string;
   progress: number;
   credits_earned: number;
+  has_approved_credit: boolean;
   project: {
     id: string;
     name: string;
@@ -50,31 +51,40 @@ export default function EmployeeDashboard() {
 
     if (error) {
       console.error("Error fetching assignments:", error);
-    } else {
-      const formattedData = (data || []).map((item: any) => ({
-        ...item,
-        project: item.project,
-      }));
-      setAssignments(formattedData);
-      
-      // Calculate total credits from approved credit_requests
-      const { data: approvedCredits } = await supabase
-        .from("credit_requests")
-        .select("credits_requested")
-        .eq("employee_id", user.id)
-        .eq("status", "approved");
-      
-      // Also fetch approved mission_requests (cast to any for new table)
-      const { data: approvedMissions } = await (supabase as any)
-        .from("mission_requests")
-        .select("credits_requested")
-        .eq("employee_id", user.id)
-        .eq("status", "approved");
-      
-      const creditTotal = (approvedCredits || []).reduce((sum, r) => sum + r.credits_requested, 0);
-      const missionTotal = ((approvedMissions as any[]) || []).reduce((sum: number, r: any) => sum + r.credits_requested, 0);
-      setTotalCredits(creditTotal + missionTotal);
+      setLoading(false);
+      return;
     }
+    
+    // Fetch approved credit requests to check which assignments already have credits
+    const { data: approvedCredits } = await supabase
+      .from("credit_requests")
+      .select("assignment_id, credits_requested")
+      .eq("employee_id", user.id)
+      .eq("status", "approved");
+
+    const approvedAssignmentIds = new Set(
+      (approvedCredits || []).map((cr) => cr.assignment_id)
+    );
+    
+    const formattedData = (data || []).map((item: any) => ({
+      ...item,
+      project: item.project,
+      has_approved_credit: approvedAssignmentIds.has(item.id),
+    }));
+    setAssignments(formattedData);
+    
+    // Calculate total credits from approved credit_requests
+    const creditTotal = (approvedCredits || []).reduce((sum, r) => sum + r.credits_requested, 0);
+      
+    // Also fetch approved mission_requests (cast to any for new table)
+    const { data: approvedMissions } = await (supabase as any)
+      .from("mission_requests")
+      .select("credits_requested")
+      .eq("employee_id", user.id)
+      .eq("status", "approved");
+    
+    const missionTotal = ((approvedMissions as any[]) || []).reduce((sum: number, r: any) => sum + r.credits_requested, 0);
+    setTotalCredits(creditTotal + missionTotal);
     setLoading(false);
   };
 
@@ -107,6 +117,16 @@ export default function EmployeeDashboard() {
     const assignment = assignments.find((a) => a.id === id);
     if (!assignment || !user) return;
 
+    // Block credit requests for completed projects that already have approved credits
+    if (assignment.has_approved_credit) {
+      toast({
+        title: "Already Credited",
+        description: "This project has already received approved credits",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { error } = await supabase.from("credit_requests").insert({
       assignment_id: id,
       employee_id: user.id,
@@ -125,6 +145,7 @@ export default function EmployeeDashboard() {
         title: "Request Submitted",
         description: "Your credit request has been submitted for approval",
       });
+      fetchAssignments(); // Refresh to update UI
     }
   };
 
@@ -243,6 +264,7 @@ export default function EmployeeDashboard() {
                   progress={assignment.progress}
                   onUpdateStatus={handleUpdateStatus}
                   onRequestCredit={handleRequestCredit}
+                  hasApprovedCredit={assignment.has_approved_credit}
                 />
               ))}
             </div>

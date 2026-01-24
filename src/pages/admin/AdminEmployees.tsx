@@ -30,11 +30,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Search, Mail, UserCircle, Loader2 } from "lucide-react";
 
+type Sector = "Web Development" | "Digital Marketing" | "Content Creation";
+
 interface Profile {
   id: string;
   email: string;
   full_name: string;
   role: "admin" | "lead" | "employee";
+  sector: Sector | null;
   created_at: string;
 }
 
@@ -51,6 +54,7 @@ export default function AdminEmployees() {
   const [newPassword, setNewPassword] = useState("");
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState<"admin" | "lead" | "employee">("employee");
+  const [newSector, setNewSector] = useState<Sector>("Web Development");
 
   const fetchEmployees = async () => {
     const { data, error } = await supabase
@@ -92,12 +96,13 @@ export default function AdminEmployees() {
       if (error) throw error;
 
       if (data.user) {
-        // Create profile
+        // Create profile with sector (only for non-admin roles)
         const { error: profileError } = await supabase.from("profiles").insert({
           id: data.user.id,
           email: newEmail,
           full_name: newName,
           role: newRole,
+          sector: newRole === "admin" ? null : newSector,
         });
 
         if (profileError) throw profileError;
@@ -113,6 +118,7 @@ export default function AdminEmployees() {
       setNewPassword("");
       setNewName("");
       setNewRole("employee");
+      setNewSector("Web Development");
       setIsDialogOpen(false);
       fetchEmployees();
     } catch (error: any) {
@@ -140,6 +146,19 @@ export default function AdminEmployees() {
         return "secondary";
       default:
         return "outline";
+    }
+  };
+
+  const getSectorBadgeClass = (sector: string | null) => {
+    switch (sector) {
+      case "Web Development":
+        return "bg-purple-100 text-purple-700";
+      case "Digital Marketing":
+        return "bg-blue-100 text-blue-700";
+      case "Content Creation":
+        return "bg-orange-100 text-orange-700";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
   };
 
@@ -210,6 +229,21 @@ export default function AdminEmployees() {
                     </SelectContent>
                   </Select>
                 </div>
+                {newRole !== "admin" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="sector">Sector</Label>
+                    <Select value={newSector} onValueChange={(v) => setNewSector(v as Sector)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select sector" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Web Development">Web Development</SelectItem>
+                        <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
+                        <SelectItem value="Content Creation">Content Creation</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <Button
                   type="submit"
                   className="w-full gradient-primary text-primary-foreground"
@@ -250,13 +284,14 @@ export default function AdminEmployees() {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Sector</TableHead>
                   <TableHead>Joined</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredEmployees.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                       No employees found
                     </TableCell>
                   </TableRow>
@@ -285,6 +320,15 @@ export default function AdminEmployees() {
                         <Badge variant={getRoleBadgeVariant(employee.role)}>
                           {employee.role}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {employee.sector ? (
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSectorBadgeClass(employee.sector)}`}>
+                            {employee.sector}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {new Date(employee.created_at).toLocaleDateString()}
