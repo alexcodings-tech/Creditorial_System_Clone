@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_credits: {
+        Row: {
+          activity: string
+          credits: number
+          sector: string
+        }
+        Insert: {
+          activity: string
+          credits: number
+          sector: string
+        }
+        Update: {
+          activity?: string
+          credits?: number
+          sector?: string
+        }
+        Relationships: []
+      }
       common_missions: {
         Row: {
           created_at: string
@@ -224,6 +242,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          activity: string | null
           client_name: string | null
           created_at: string
           created_by: string | null
@@ -238,6 +257,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          activity?: string | null
           client_name?: string | null
           created_at?: string
           created_by?: string | null
@@ -252,6 +272,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          activity?: string | null
           client_name?: string | null
           created_at?: string
           created_by?: string | null
@@ -265,7 +286,15 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "projects_activity_fk"
+            columns: ["activity"]
+            isOneToOne: false
+            referencedRelation: "activity_credits"
+            referencedColumns: ["activity"]
+          },
+        ]
       }
     }
     Views: {
