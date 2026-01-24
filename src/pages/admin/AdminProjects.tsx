@@ -32,6 +32,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Search, Calendar, Users, Loader2 } from "lucide-react";
 
+type Sector = "Web Development" | "Digital Marketing" | "Content Creation";
+
 interface Project {
   id: string;
   name: string;
@@ -50,6 +52,7 @@ interface Profile {
   email: string;
   full_name: string;
   role: string;
+  sector: Sector | null;
 }
 
 export default function AdminProjects() {
@@ -68,7 +71,7 @@ export default function AdminProjects() {
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newClientName, setNewClientName] = useState("");
-  const [newProjectType, setNewProjectType] = useState("general");
+  const [newProjectType, setNewProjectType] = useState<Sector>("Web Development");
   const [newStartDate, setNewStartDate] = useState("");
   const [newEndDate, setNewEndDate] = useState("");
   const [newExpectedCredits, setNewExpectedCredits] = useState("10");
@@ -96,7 +99,7 @@ export default function AdminProjects() {
   const fetchEmployees = async () => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id, email, full_name, role, sector")
       .in("role", ["employee", "lead"]);
 
     if (error) {
@@ -138,7 +141,7 @@ export default function AdminProjects() {
       setNewName("");
       setNewDescription("");
       setNewClientName("");
-      setNewProjectType("general");
+      setNewProjectType("Web Development");
       setNewStartDate("");
       setNewEndDate("");
       setNewExpectedCredits("10");
@@ -157,6 +160,21 @@ export default function AdminProjects() {
 
   const handleAssignEmployee = async () => {
     if (!selectedProject || !selectedEmployeeId) return;
+
+    // Validate sector match
+    const selectedEmployee = employees.find((e) => e.id === selectedEmployeeId);
+    if (!selectedEmployee) return;
+
+    // Check if employee sector matches project type (sector)
+    if (selectedEmployee.sector !== selectedProject.project_type) {
+      toast({
+        title: "Assignment Blocked",
+        description: `Cannot assign ${selectedEmployee.full_name} (${selectedEmployee.sector || "No sector"}) to a ${selectedProject.project_type} project. Sectors must match.`,
+        variant: "destructive",
+      });
+      console.error(`Assignment validation failed: Employee sector (${selectedEmployee.sector}) does not match project type (${selectedProject.project_type})`);
+      return;
+    }
 
     try {
       const { error } = await supabase.from("project_assignments").insert({
@@ -263,17 +281,14 @@ export default function AdminProjects() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="type">Project Type</Label>
-                    <Select value={newProjectType} onValueChange={setNewProjectType}>
+                    <Select value={newProjectType} onValueChange={(v) => setNewProjectType(v as Sector)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="general">General</SelectItem>
-                        <SelectItem value="meta_ads">Meta Ads</SelectItem>
-                        <SelectItem value="google_ads">Google Ads</SelectItem>
-                        <SelectItem value="seo">SEO</SelectItem>
-                        <SelectItem value="content">Content</SelectItem>
-                        <SelectItem value="design">Design</SelectItem>
+                        <SelectItem value="Web Development">Web Development</SelectItem>
+                        <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
+                        <SelectItem value="Content Creation">Content Creation</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -418,11 +433,18 @@ export default function AdminProjects() {
                     <SelectValue placeholder="Choose an employee" />
                   </SelectTrigger>
                   <SelectContent>
-                    {employees.map((emp) => (
-                      <SelectItem key={emp.id} value={emp.id}>
-                        {emp.full_name} ({emp.role})
-                      </SelectItem>
-                    ))}
+                    {employees
+                      .filter((emp) => emp.sector === selectedProject?.project_type)
+                      .map((emp) => (
+                        <SelectItem key={emp.id} value={emp.id}>
+                          {emp.full_name} ({emp.sector})
+                        </SelectItem>
+                      ))}
+                    {employees.filter((emp) => emp.sector === selectedProject?.project_type).length === 0 && (
+                      <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+                        No employees with matching sector ({selectedProject?.project_type})
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

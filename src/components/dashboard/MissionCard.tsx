@@ -46,6 +46,10 @@ const statusConfig = {
 };
 
 const projectTypeColors: Record<string, string> = {
+  "Web Development": "bg-purple-100 text-purple-700",
+  "Digital Marketing": "bg-blue-100 text-blue-700",
+  "Content Creation": "bg-orange-100 text-orange-700",
+  // Legacy types for backward compatibility
   "Meta Ads": "bg-blue-100 text-blue-700",
   "SEO": "bg-green-100 text-green-700",
   "Web": "bg-purple-100 text-purple-700",
