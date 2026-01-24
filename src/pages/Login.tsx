@@ -74,7 +74,7 @@ export default function Login() {
           <h1 className="text-4xl font-display font-bold text-white mb-4">
             Credit & Performance
             <br />
-            <span className="text-white/80">Gamified Platform</span>
+            <span className="text-white/80 text-right">        Platform</span>
           </h1>
           
           <p className="text-lg text-white/70 max-w-md mb-8">
@@ -84,11 +84,11 @@ export default function Login() {
 
           <div className="flex gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold font-display text-white">100+</div>
+              <div className="text-3xl font-bold font-display text-white">100</div>
               <div className="text-sm text-white/60">Monthly Credits</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold font-display text-white">7</div>
+              <div className="text-3xl font-bold font-display text-white">3</div>
               <div className="text-sm text-white/60">Role Types</div>
             </div>
             <div className="text-center">
