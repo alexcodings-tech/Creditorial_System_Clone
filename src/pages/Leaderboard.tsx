@@ -208,7 +208,7 @@ export default function Leaderboard() {
                         </div>
                         <div className="text-center">
                           <p className="font-semibold text-foreground text-sm sm:text-base">{topThree[1]?.name}</p>
-                          <p className="text-xs text-muted-foreground truncate max-w-[100px] sm:max-w-none">{topThree[1]?.role}</p>
+                          {/* <p className="text-xs text-muted-foreground truncate max-w-[100px] sm:max-w-none">{topThree[1]?.role}</p> */}
                           <p className="text-lg font-bold font-display text-silver mt-1">{topThree[1]?.credits} pts</p>
                         </div>
                         <div className="h-24 w-20 sm:w-28 gradient-silver rounded-t-lg mt-4 flex items-center justify-center">
