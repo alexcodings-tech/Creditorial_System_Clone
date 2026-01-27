@@ -168,8 +168,8 @@ export default function AdminEmployees() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold font-display text-foreground">Employees</h1>
-            <p className="text-muted-foreground mt-1">Manage your team members</p>
+            <h1 className="text-3xl font-bold font-display text-foreground">Customers</h1>
+            <p className="text-muted-foreground mt-1">Manage Customers</p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -216,7 +216,7 @@ export default function AdminEmployees() {
                     minLength={6}
                   />
                 </div>
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
                   <Select value={newRole} onValueChange={(v) => setNewRole(v as typeof newRole)}>
                     <SelectTrigger>
@@ -243,7 +243,7 @@ export default function AdminEmployees() {
                       </SelectContent>
                     </Select>
                   </div>
-                )}
+                )} */}
                 <Button
                   type="submit"
                   className="w-full gradient-primary text-primary-foreground"
@@ -283,8 +283,8 @@ export default function AdminEmployees() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Sector</TableHead>
+                  {/* <TableHead>Role</TableHead>
+                  <TableHead>Sector</TableHead> */}
                   <TableHead>Joined</TableHead>
                 </TableRow>
               </TableHeader>
