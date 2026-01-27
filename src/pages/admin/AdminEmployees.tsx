@@ -175,12 +175,12 @@ export default function AdminEmployees() {
             <DialogTrigger asChild>
               <Button className="gap-2 gradient-primary text-primary-foreground shadow-glow">
                 <Plus className="h-4 w-4" />
-                Add Employee
+                Add Customers
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Add New Employee</DialogTitle>
+                <DialogTitle>Add New Customers</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleCreateEmployee} className="space-y-4 mt-4">
                 <div className="space-y-2">
@@ -316,7 +316,7 @@ export default function AdminEmployees() {
                           {employee.email}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <Badge variant={getRoleBadgeVariant(employee.role)}>
                           {employee.role}
                         </Badge>
@@ -329,7 +329,7 @@ export default function AdminEmployees() {
                         ) : (
                           <span className="text-muted-foreground">-</span>
                         )}
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell className="text-muted-foreground">
                         {new Date(employee.created_at).toLocaleDateString()}
                       </TableCell>
