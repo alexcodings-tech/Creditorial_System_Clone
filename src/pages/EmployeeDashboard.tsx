@@ -243,7 +243,7 @@ export default function EmployeeDashboard() {
         <CommonMissionsSection />
 
         {/* My Project Missions */}
-        <div>
+        {/* <div>
           <h2 className="text-xl font-bold font-display text-foreground mb-6">My Project Missions</h2>
           {assignments.length === 0 ? (
             <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
@@ -269,7 +269,7 @@ export default function EmployeeDashboard() {
               ))}
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </DashboardLayout>
   );
