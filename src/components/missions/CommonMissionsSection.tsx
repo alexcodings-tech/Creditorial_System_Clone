@@ -49,15 +49,14 @@ interface MissionRequest {
 }
 
 const missionIcons: { [key: string]: any } = {
- "Zoom Meeting": Video,
-"Business Trip": Plane,
-"Team Assistance": Users,
-"Training Session": GraduationCap,
-"Client Presentation": Presentation,
-"Documentation": FileText,
-"Code Review": Code,
-"Mentoring": Heart,
-
+"Make a Purchase": Video,
+"Big Purchase Bonus": Plane,
+"Refer a Friend": Users,
+"First-Time Bonus": GraduationCap,
+"Spend Over ₹1000": Presentation,
+"View Bill History": FileText,
+"Monthly Shopper": Code,
+"Birthday Bonus": Heart,
 };
 
 export function CommonMissionsSection() {
