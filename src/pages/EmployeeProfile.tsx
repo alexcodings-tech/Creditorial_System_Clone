@@ -59,7 +59,7 @@ export default function EmployeeProfile() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-foreground">{profile?.full_name}</h2>
-              <p className="text-muted-foreground capitalize">{profile?.role}</p>
+              {/* <p className="text-muted-foreground capitalize">{profile?.role}</p> */}
             </div>
           </div>
 
@@ -85,14 +85,14 @@ export default function EmployeeProfile() {
               <p className="text-xs text-muted-foreground">Email cannot be changed</p>
             </div>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
                 Role
               </Label>
               <Input value={profile?.role || ""} disabled className="capitalize" />
               <p className="text-xs text-muted-foreground">Contact admin to change role</p>
-            </div>
+            </div> */}
 
             <Button
               onClick={handleSave}
