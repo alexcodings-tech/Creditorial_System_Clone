@@ -178,7 +178,7 @@ export default function EmployeeDashboard() {
           <div className="lg:col-span-2">
             <ProfileCard
               name={profile?.full_name || "Employee"}
-              {/* role={profile?.role || "employee"} */}
+              /* role={profile?.role || "employee"} */
               avatar={profile?.avatar_url || undefined}
               rank={1}
               previousRank={1}
