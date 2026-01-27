@@ -209,7 +209,7 @@ export default function AdminDashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold font-display text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground mt-1">Manage employees, projects, and approvals</p>
+            <p className="text-muted-foreground mt-1">Manage Customers, visits, and approvals</p>
           </div>
           <div className="flex gap-3">
             <Button 
@@ -218,28 +218,28 @@ export default function AdminDashboard() {
               onClick={() => navigate("/admin/employees")}
             >
               <Plus className="h-4 w-4" />
-              Add Employee
+              Add Customer
             </Button>
-            <Button 
+            {/* <Button 
               className="gap-2 gradient-primary text-primary-foreground shadow-glow"
               onClick={() => navigate("/admin/projects")}
             >
               <Plus className="h-4 w-4" />
               Create Project
-            </Button>
+            </Button> */}
           </div>
         </div>
 
         {/* Stats Overview */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Total Employees"
+            title="Total Customers"
             value={stats.totalEmployees}
             icon={Users}
             variant="primary"
           />
           <StatCard
-            title="Active Projects"
+            title="Active Customers"
             value={stats.activeProjects}
             icon={FolderKanban}
           />
