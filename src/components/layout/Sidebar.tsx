@@ -29,7 +29,7 @@ const menuItems = {
   admin: [
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
     { icon: Users, label: "Customers", path: "/admin/employees" },
-    { icon: FolderKanban, label: "visits", path: "/admin/projects" },
+    // { icon: FolderKanban, label: "visits", path: "/admin/projects" },
     { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
     { icon: Shield, label: "Approvals", path: "/admin/approvals" },
     { icon: Settings, label: "Settings", path: "/admin/settings" },
@@ -43,7 +43,7 @@ const menuItems = {
   ],
   employee: [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-    { icon: FolderKanban, label: "My visits", path: "/projects" },
+    // { icon: FolderKanban, label: "My visits", path: "/projects" },
     { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
     { icon: UserCog, label: "Profile", path: "/profile" },
   ],
