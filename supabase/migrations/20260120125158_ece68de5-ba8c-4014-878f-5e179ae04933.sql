@@ -81,11 +81,11 @@ ALTER TABLE public.credit_requests ADD COLUMN IF NOT EXISTS mission_id UUID REFE
 -- INSERT DEFAULT COMMON MISSIONS
 -- =============================================
 INSERT INTO public.common_missions (mission_name, mission_description, default_credit_value) VALUES
-  ('Zoom Meeting', 'Conducted a Zoom meeting with client or team', 5),
-  ('Business Trip', 'Completed a business trip for work purposes', 10),
-  ('Team Assistance', 'Helped team members with their tasks', 3),
-  ('Training Session', 'Attended or conducted a training session', 5),
-  ('Client Presentation', 'Delivered a presentation to clients', 8),
-  ('Documentation', 'Created or updated project documentation', 4),
-  ('Code Review', 'Participated in code review sessions', 3),
-  ('Mentoring', 'Mentored junior team members', 5);
+  ('Make a Purchase', 'Earn points for completing any purchase', 10),
+('Big Purchase Bonus', 'Earn bonus points for purchases over ₹1000', 50),
+('Refer a Friend', 'Earn points when a referred friend makes a purchase', 150),
+('First-Time Bonus', 'Welcome bonus for new customer registration', 100),
+('Spend Over ₹1000', 'Extra points for crossing ₹1000 in a single bill', 50),
+('View Bill History', 'View and track your past purchase history', 5),
+('Monthly Shopper', 'Earn points for spending ₹5000 or more in a month', 200),
+('Birthday Bonus', 'Special bonus points on your birthday', 200);
