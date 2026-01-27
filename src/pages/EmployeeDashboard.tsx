@@ -121,7 +121,7 @@ export default function EmployeeDashboard() {
     if (assignment.has_approved_credit) {
       toast({
         title: "Already Credited",
-        description: "This project has already received approved credits",
+        description: "This one has already received approved credits",
         variant: "destructive",
       });
       return;
@@ -165,7 +165,7 @@ export default function EmployeeDashboard() {
 
   // Achievements based on progress
   const achievements = [
-    { id: "1", title: "First Mission", description: "Complete your first project", icon: Star, variant: completedProjects > 0 ? "gold" as const : "locked" as const },
+    { id: "1", title: "First Visit", description: "Complete your first Visit", icon: Star, variant: completedProjects > 0 ? "gold" as const : "locked" as const },
     { id: "2", title: "Credit Hunter", description: "Earn 50 credits", icon: Coins, variant: totalCredits >= 50 ? "gold" as const : "locked" as const },
     { id: "3", title: "Streak Master", description: "7-day login streak", icon: Zap, variant: "locked" as const },
   ];
@@ -178,7 +178,7 @@ export default function EmployeeDashboard() {
           <div className="lg:col-span-2">
             <ProfileCard
               name={profile?.full_name || "Employee"}
-              role={profile?.role || "employee"}
+              {/* role={profile?.role || "employee"} */}
               avatar={profile?.avatar_url || undefined}
               rank={1}
               previousRank={1}
@@ -203,11 +203,11 @@ export default function EmployeeDashboard() {
             icon={Coins}
             variant="primary"
           />
-          <StatCard
+          {/* <StatCard
             title="Active Projects"
             value={activeProjects}
             icon={Target}
-          />
+          /> */}
           <StatCard
             title="Completed"
             value={completedProjects}
