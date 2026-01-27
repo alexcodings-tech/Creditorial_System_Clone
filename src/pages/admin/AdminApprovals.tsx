@@ -357,7 +357,7 @@ export default function AdminApprovals() {
                           <div className="flex items-center gap-4">
                             <div>
                               <p className="font-medium text-foreground">{request.employee_name}</p>
-                              <p className="text-sm text-muted-foreground">{request.project_name}</p>
+                              {/* <p className="text-sm text-muted-foreground">{request.project_name}</p> */}
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
