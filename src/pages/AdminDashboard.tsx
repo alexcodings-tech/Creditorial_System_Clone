@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import RewardVoucher from "./RewardVoucher";
+
 import {
   Users,
   FolderKanban,
