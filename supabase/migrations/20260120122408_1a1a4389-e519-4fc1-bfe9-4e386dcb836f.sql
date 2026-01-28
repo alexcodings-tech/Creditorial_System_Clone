@@ -205,3 +205,14 @@ ADD COLUMN IF NOT EXISTS gift_redeemed BOOLEAN DEFAULT FALSE;
 CREATE TRIGGER update_project_assignments_updated_at
   BEFORE UPDATE ON public.project_assignments
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+CREATE TABLE public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  role app_role NOT NULL DEFAULT 'employee',
+  avatar_url TEXT,
+  gift_redeemed BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
