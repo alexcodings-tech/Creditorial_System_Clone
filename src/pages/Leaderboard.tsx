@@ -237,7 +237,7 @@ export default function Leaderboard() {
                         </div>
                         <div className="text-center">
                           <p className="font-bold text-foreground text-base sm:text-lg">{topThree[0]?.name}</p>
-                          <p className="text-xs sm:text-sm text-muted-foreground">{topThree[0]?.role}</p>
+                          {/* <p className="text-xs sm:text-sm text-muted-foreground">{topThree[0]?.role}</p> */}
                           <p className="text-xl font-bold font-display text-gold mt-1">{topThree[0]?.credits} pts</p>
                         </div>
                         <div className="h-32 w-24 sm:w-32 gradient-gold rounded-t-lg mt-4 flex items-center justify-center">
@@ -263,7 +263,7 @@ export default function Leaderboard() {
                         </div>
                         <div className="text-center">
                           <p className="font-semibold text-foreground text-sm sm:text-base">{topThree[2]?.name}</p>
-                          <p className="text-xs text-muted-foreground truncate max-w-[100px] sm:max-w-none">{topThree[2]?.role}</p>
+                          {/* <p className="text-xs text-muted-foreground truncate max-w-[100px] sm:max-w-none">{topThree[2]?.role}</p> */}
                           <p className="text-lg font-bold font-display text-bronze mt-1">{topThree[2]?.credits} pts</p>
                         </div>
                         <div className="h-20 w-20 sm:w-28 gradient-bronze rounded-t-lg mt-4 flex items-center justify-center">
@@ -282,7 +282,7 @@ export default function Leaderboard() {
                       rank={entry.rank}
                       previousRank={entry.previousRank}
                       name={entry.name}
-                      role={entry.role}
+                     role={entry.role}
                       credits={entry.credits}
                       avatar={entry.avatar}
                       isCurrentUser={entry.id === user?.id}
