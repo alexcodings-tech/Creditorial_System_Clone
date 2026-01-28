@@ -196,6 +196,10 @@ CREATE TRIGGER update_profiles_updated_at
 
 CREATE TRIGGER update_projects_updated_at
   BEFORE UPDATE ON public.projects
+
+  ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS gift_redeemed BOOLEAN DEFAULT FALSE;
+
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 CREATE TRIGGER update_project_assignments_updated_at
